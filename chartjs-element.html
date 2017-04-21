@@ -12,7 +12,7 @@ Copyright 2013 The Polymer Authors. All rights reserved.
 Use of this source code is governed by a BSD-style
 license that can be found in the LICENSE file.
 -->
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="chartjs-import.html">
 
 <!--
@@ -31,97 +31,112 @@ license that can be found in the LICENSE file.
 
 <dom-module id="chartjs-element">
 
-  <style>
-    :host {
-      display: inline-block;
-      width: 300px;
-      height: 260px;
-    }
-  </style>
-
   <template>
+    <style>
+       :host {
+        display: inline-block;
+        width: 300px;
+        height: 260px;
+      }
+    </style>
 
-    <div><canvas id="chart" width="{{width}}" height="{{height}}"></canvas></div>
+    <div>
+      <canvas id="chart" width="{{width}}" height="{{height}}"></canvas>
+    </div>
 
   </template>
 
   <script>
+    class ChartjsElement extends Polymer.Element {
+      static get is() { return 'chartjs-element'; }
 
-    Polymer({
+      static get properties() {
+        return {
 
-      is: 'chartjs-element',
+          labels: {
+            type: Array,
+            value: ['January', 'February', 'March', 'April', 'May', 'June', 'July']
+          },
 
-      properties: {
+          datasets: {
+            type: Array,
+            value: [{
+              colors: ['#FF6384'],
+              data: [28, 48, 40, 19, 96, 27, 100],
+              name: 'chart',
+              fill: true
+            }]
+          },
 
-        labels: {
-          type: Array,
-          value: ['January','February','March','April','May','June','July']
-        },
+          options: {
+            type: Object,
+            value: null
+          },
 
-        datasets: {
-          type: Array,
-          value: [{
-            colors: ['#FF6384'],
-            data: [28,48,40,19,96,27,100],
-            name: 'chart',
-            fill: true
-          }]
-        },
+          kind: {
+            type: String,
+            value: function () {
+              return ['radar', 'line', 'bar'][Math.floor(Math.random() * 3)];
+            }
+          },
 
-        options: {
-          type: Object,
-          value: null
-        },
+          _chartData: {
+            type: Object,
+            computed: '_computeChartData(datasets, labels)'
+          },
 
-        kind: {
-          type: String,
-          value: function() {
-            return ['radar', 'line', 'bar'][Math.floor(Math.random()*3)];
+          chart: {
+            type: Object,
+            computed: '_computeChart(kind, options, ctx, _chartData)'
           }
-        },
 
-        _chartData: {
-          type: Object,
-          computed: '_computeChartData(datasets, labels)'
-        },
-
-        chart: {
-          type: Object,
-          computed: '_computeChart(kind, options, ctx, _chartData)'
         }
+      }
 
-      },
+      ready() {
+        super.ready();
+        console.log("ready");
+      }
 
-      attached: function() {
+      connectedCallback() {
+        super.connectedCallback();
+        console.log("connectedCallback");
         // TODO(sjmiles): measuring not available synchronously at attached (on Chrome)
         // TODO(sjmiles): size of canvas not settable synchronously at attached (on Chrome)
-        this.async(this._createContext, 1);
-      },
+        
+        //this.async(this._createContext, 1);
+        this._createContext();
+      }
 
-      _createContext: function() {
+      _createContext() {
         this.width = Math.max(this.offsetWidth, 200);
         this.height = Math.max(this.offsetHeight, 100);
         this.ctx = this.$.chart.getContext('2d');
-      },
+        console.log("ctx: " + this.ctx);
+      }
 
-      _computeChart: function(kind, options, ctx, _chartData) {
+      _computeChart(kind, options, ctx, _chartData) {
+        console.log("_computeChart!" + kind + " " + options + " " + ctx + " " + _chartData);
+        if(this.ctx === undefined){
+          return;
+        }
         if (this.chart) {
           this.chart.destroy();
         }
-        return new Chart(ctx, {type: kind, data: _chartData, options: options})
-      },
+        return new Chart(ctx, { type: kind, data: _chartData, options: options })
+      }
 
-      _computeChartData: function(datasets, labels) {
+      _computeChartData(datasets, labels) {
         var dataPts = [];
         var that = this;
 
-        datasets.forEach(function(d) {
+        datasets.forEach(function (d) {
           var rgbColors = d.colors.map(that.hexToRgb).map(that.rgbToString);
           dataPts.push({
             fill: d.fill == undefined ? false : d.fill,
-            backgroundColor : rgbColors.length == 1 ? rgbColors[0] : rgbColors,
-            borderColor : rgbColors.length == 1 ? rgbColors[0] : '#ffffff',
-            pointHoverColor : rgbColors.length == 1 ? rgbColors[0] : rgbColors,
+            backgroundColor: rgbColors.length == 1 ? rgbColors[0] : rgbColors,
+            borderColor: rgbColors.length == 1 ? rgbColors[0] : '#ffffff',
+            pointHoverColor: rgbColors.length == 1 ? rgbColors[0] : rgbColors,
             pointBorderColor: rgbColors.length == 1 ? rgbColors[0] : rgbColors,
             data: d.data,
             label: d.name
@@ -131,13 +146,13 @@ license that can be found in the LICENSE file.
           labels: labels,
           datasets: dataPts
         };
-      },
+      }
 
-      rgbToString: function(array) {
+      rgbToString(array) {
         return 'rgba(' + array.join(',') + ', 0.5)'
-      },
+      }
 
-      hexToRgb: function(hex) {
+      hexToRgb(hex) {
         var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? [
           parseInt(result[1], 16),
@@ -145,8 +160,8 @@ license that can be found in the LICENSE file.
           parseInt(result[3], 16)
         ] : [0, 0, 0];
       }
+    }
 
-    });
+    window.customElements.define(ChartjsElement.is, ChartjsElement);
   </script>
-
 </dom-module>
