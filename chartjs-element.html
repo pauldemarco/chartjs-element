@@ -93,18 +93,10 @@ license that can be found in the LICENSE file.
         }
       }
 
-      ready() {
-        super.ready();
-        console.log("ready");
-      }
-
       connectedCallback() {
         super.connectedCallback();
-        console.log("connectedCallback");
         // TODO(sjmiles): measuring not available synchronously at attached (on Chrome)
         // TODO(sjmiles): size of canvas not settable synchronously at attached (on Chrome)
-        
-        //this.async(this._createContext, 1);
         this._createContext();
       }
 
@@ -112,11 +104,9 @@ license that can be found in the LICENSE file.
         this.width = Math.max(this.offsetWidth, 200);
         this.height = Math.max(this.offsetHeight, 100);
         this.ctx = this.$.chart.getContext('2d');
-        console.log("ctx: " + this.ctx);
       }
 
       _computeChart(kind, options, ctx, _chartData) {
-        console.log("_computeChart!" + kind + " " + options + " " + ctx + " " + _chartData);
         if(this.ctx === undefined){
           return;
         }
